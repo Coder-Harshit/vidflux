@@ -1,6 +1,7 @@
 from PySide6 import QtWidgets
 from widgets.queue import DownloadQueue
 from utils import validateURL
+from utils.ytdlp import download
 
 class HomeWidget(QtWidgets.QWidget):
     def __init__(self):
@@ -44,7 +45,11 @@ class HomeWidget(QtWidgets.QWidget):
         self.setLayout(l2)        
 
     def search_url(self):
-        print(validateURL.validate(self.url_bar.text())) 
+        url:str = self.url_bar.text()
+        if not validateURL.validate(url):
+            print("Check input URL")
+        else: 
+            download(url)
 
     def empty_logs(self):
         self.log_viewer.setText("Logs go here....")

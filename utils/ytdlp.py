@@ -1,4 +1,3 @@
-import json
 import yt_dlp
 
 
@@ -37,17 +36,14 @@ def format_selector(ctx, ext):
     }
 
 
-URL = 'https://www.youtube.com/watch?v=xZQ_Qw2IJOQ'
-preferred_ext = "ajsh"
+def download(url,preferred_ext=None):     
+    ydl_opts = {
+        'format': lambda ctx: format_selector(ctx,preferred_ext),
+    }
 
-ydl_opts = {
-    'format': lambda ctx: format_selector(ctx,preferred_ext),
-}
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try: 
+            ydl.download(url)
 
-
-with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-    try: 
-        ydl.download(URL)
-
-    except Exception as ex:
-        print("ERROR Occured: ",ex)
+        except Exception as ex:
+            print("ERROR Occured: ",ex)
