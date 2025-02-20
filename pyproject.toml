@@ -1,0 +1,6 @@
+[project]
+name = "vidflux"
+version = "0.1.0"
+description = "VidFlux: A cross-platform application for organizing and managing downloads."
+requires-python = ">=3.13"
+dependencies = []
