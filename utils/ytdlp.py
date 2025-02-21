@@ -35,10 +35,18 @@ def format_selector(ctx, ext):
         'protocol': f'{best_video["protocol"]}+{best_audio["protocol"]}'
     }
 
+def update_progress(d,console):
+    # if d['status'] == 'downloading':
+    percent_str = d.get('_percent_str', 'N/A')  # Handle potential missing key
+    speed_str = d.get('_speed_str', 'N/A')
+    eta_str = d.get('_eta_str', 'N/A')
+    message = f"Progress: {percent_str}, Speed: {speed_str}, ETA: {eta_str}"
+    console.appendPlainText(message) 
 
-def download(url,preferred_ext=None):     
+def download(url,console,preferred_ext=None):     
     ydl_opts = {
         'format': lambda ctx: format_selector(ctx,preferred_ext),
+        'progress_hooks': [lambda d: update_progress(d,console)],
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:

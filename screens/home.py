@@ -2,6 +2,7 @@ from PySide6 import QtWidgets
 from widgets.queue import DownloadQueue
 from utils import validateURL
 from utils.ytdlp import download
+import sys
 
 class HomeWidget(QtWidgets.QWidget):
     def __init__(self):
@@ -23,7 +24,8 @@ class HomeWidget(QtWidgets.QWidget):
         self.settings_btn = QtWidgets.QPushButton("SETTINGS")
         self.settings_btn.clicked.connect(lambda : print("clicked"))
 
-        self.log_viewer = QtWidgets.QLabel("Logs go here....")
+        self.log_viewer = QtWidgets.QPlainTextEdit("Logs go here....")
+        self.log_viewer.setReadOnly(True)
 
         l3 = QtWidgets.QVBoxLayout()
         l3.addWidget(self.log_viewer)
@@ -42,17 +44,19 @@ class HomeWidget(QtWidgets.QWidget):
         l2.addWidget(self.settings_btn)
         l2.addLayout(l1)
         l2.addLayout(l3)
-        self.setLayout(l2)        
+        self.setLayout(l2)       
+
+        sys.stdout = self.LogOutput(self.log_viewer)
 
     def search_url(self):
         url:str = self.url_bar.text()
         if not validateURL.validate(url):
             print("Check input URL")
         else: 
-            download(url)
+            download(url,console=self.log_viewer)
 
     def empty_logs(self):
-        self.log_viewer.setText("Logs go here....")
+        self.log_viewer.clear()
 
     def save_logs(self):
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, caption="Save File", dir='logs')
@@ -62,3 +66,16 @@ class HomeWidget(QtWidgets.QWidget):
                 print(self.log_viewer.text(),file=file)
         else: 
             print("OPERATION TERMINATED")
+
+    class LogOutput:
+        def __init__(self,console):
+            self.console = console
+        
+        def write(self,text):
+            self.console.appendPlainText(text)
+        
+        def clear(self):
+            self.console.setPlainText("Logs go here....")
+
+        def flush(self):
+            pass
