@@ -74,7 +74,7 @@ class HomeWidget(QtWidgets.QWidget):
         print(filename)
         if filename:
             with open(filename,'w') as file:
-                print(self.log_viewer.text(),file=file)
+                print(self.log_viewer.toPlainText(),file=file)
         else: 
             print("OPERATION TERMINATED")
    
@@ -82,4 +82,4 @@ class HomeWidget(QtWidgets.QWidget):
         self.log_viewer.appendPlainText(text)
     
     def clear_log(self):
-        self.log_viewer.setPlainText("Logs go here....")
+        self.log_viewer.setPlainText()
