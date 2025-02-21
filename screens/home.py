@@ -1,12 +1,17 @@
 from PySide6 import QtWidgets
 from widgets.queue import DownloadQueue
 from utils import validateURL
-from utils.ytdlp import download
+from utils.ytdlp import DownloadWorker
 import sys
+import threading
+from signals import DownloadSignals
 
 class HomeWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+
+
+        self.signals = DownloadSignals()
 
         rightHalf = None
         leftHalf = None
@@ -46,14 +51,20 @@ class HomeWidget(QtWidgets.QWidget):
         l2.addLayout(l3)
         self.setLayout(l2)       
 
-        sys.stdout = self.LogOutput(self.log_viewer)
+        # sys.stdout = self.log_viewer
+        self.worker = None
 
     def search_url(self):
         url:str = self.url_bar.text()
         if not validateURL.validate(url):
             print("Check input URL")
         else: 
-            download(url,console=self.log_viewer)
+            self.worker = DownloadWorker()
+            self.worker.signals.progress_update.connect(self.write_log)
+            # self.worker.signals.download_error.connect()
+            # self.worker.signals.download_finished.connect()
+            self.worker_thread = threading.Thread(target=self.worker.download, args=(url,))
+            self.worker_thread.start()
 
     def empty_logs(self):
         self.log_viewer.clear()
@@ -66,16 +77,9 @@ class HomeWidget(QtWidgets.QWidget):
                 print(self.log_viewer.text(),file=file)
         else: 
             print("OPERATION TERMINATED")
-
-    class LogOutput:
-        def __init__(self,console):
-            self.console = console
-        
-        def write(self,text):
-            self.console.appendPlainText(text)
-        
-        def clear(self):
-            self.console.setPlainText("Logs go here....")
-
-        def flush(self):
-            pass
+   
+    def write_log(self,text):
+        self.log_viewer.appendPlainText(text)
+    
+    def clear_log(self):
+        self.log_viewer.setPlainText("Logs go here....")
