@@ -16,30 +16,33 @@ class HomeWidget(QtWidgets.QWidget):
         rightHalf = None
         leftHalf = None
 
+
+        self.settings_btn = QtWidgets.QPushButton("SETTINGS")
+        self.settings_btn.clicked.connect(lambda : print("settings btn clicked"))
+
         self.url_bar = QtWidgets.QLineEdit('Enter URL Here')
         self.url_bar.returnPressed.connect(self.search_url)
 
         self.search_btn = QtWidgets.QPushButton("search")
         self.search_btn.clicked.connect(self.search_url)
 
+        self.log_viewer = QtWidgets.QPlainTextEdit("Logs go here....")
+        self.log_viewer.setReadOnly(True)
+
+        self.clear_logs_btn = QtWidgets.QPushButton("Clear Logs")
+        self.clear_logs_btn.clicked.connect(self.empty_logs)
+        self.save_logs_btn = QtWidgets.QPushButton("Save Logs")
+        self.save_logs_btn.clicked.connect(self.save_logs)
+
+
         l1 = QtWidgets.QHBoxLayout()    # vertical layout
         l1.addWidget(self.url_bar)
         l1.addWidget(self.search_btn)
-
-        self.settings_btn = QtWidgets.QPushButton("SETTINGS")
-        self.settings_btn.clicked.connect(lambda : print("clicked"))
-
-        self.log_viewer = QtWidgets.QPlainTextEdit("Logs go here....")
-        self.log_viewer.setReadOnly(True)
 
         l3 = QtWidgets.QVBoxLayout()
         l3.addWidget(self.log_viewer)
 
         l4 = QtWidgets.QHBoxLayout()
-        self.clear_logs_btn = QtWidgets.QPushButton("Clear Logs")
-        self.clear_logs_btn.clicked.connect(self.empty_logs)
-        self.save_logs_btn = QtWidgets.QPushButton("Save Logs")
-        self.save_logs_btn.clicked.connect(self.save_logs)
         l4.addWidget(self.clear_logs_btn)
         l4.addWidget(self.save_logs_btn)
 
@@ -63,18 +66,23 @@ class HomeWidget(QtWidgets.QWidget):
             self.worker.signals.progress_update.connect(self.write_log)
             # self.worker.signals.download_error.connect()
             # self.worker.signals.download_finished.connect()
-            self.worker_thread = threading.Thread(target=self.worker.download, args=(url,))
+            download_dir = QtWidgets.QFileDialog.getExistingDirectory(self,("Open Directory"),
+                                                                      options=QtWidgets.QFileDialog.Options(
+                                                                        QtWidgets.QFileDialog.ShowDirsOnly  
+                                                                      )
+            )
+            self.worker_thread = threading.Thread(target=self.worker.download, args=(url,download_dir))
             self.worker_thread.start()
 
     def empty_logs(self):
         self.log_viewer.clear()
 
     def save_logs(self):
-        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, caption="Save File", dir='logs')
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, caption="Save File", dir='logs/')
         print(filename)
         if filename:
-            with open(filename,'w') as file:
-                print(self.log_viewer.toPlainText(),file=file)
+            with open(filename, 'w') as file:
+                file.write(self.log_viewer.toPlainText())
         else: 
             print("OPERATION TERMINATED")
    

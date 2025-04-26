@@ -1,5 +1,6 @@
 import yt_dlp
 from signals import DownloadSignals
+import os
 
 
 class DownloadWorker:
@@ -101,14 +102,19 @@ class DownloadWorker:
 
         self.signals.progress_update.emit(message)
         
-    def download(self, url, preferred_ext=None):
+    def download(self, url, download_dir='', preferred_ext=None):
         ydl_opts = {
             'format': lambda ctx: self.format_selector(ctx,preferred_ext),
             'progress_hooks': [lambda d: self.update_progress(d)],
+            'outtmpl': {
+                'default': os.path.join(download_dir, '%(title)s.%(ext)s'),
+                'chapter': os.path.join(download_dir, '%(title)s - %(section_number)03d %(section_title)s.%(ext)s'),
+            },
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             try: 
+                print(ydl_opts)
                 # self.signals.progress_update.emit()
                 ydl.download(url)
                 self.signals.download_finished.emit()
