@@ -5,6 +5,6 @@ __pycache__
 *.pyc
 logs/
 local/
-.mp4
-.mp3
-.webm
+*.mp4
+*.mp3
+*.webm
