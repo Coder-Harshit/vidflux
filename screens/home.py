@@ -5,6 +5,7 @@ from utils.ytdlp import DownloadWorker
 import sys
 import threading
 from signals import DownloadSignals
+from screens.download_finish import FinishDialog
 
 class HomeWidget(QtWidgets.QWidget):
     def __init__(self):
@@ -65,7 +66,7 @@ class HomeWidget(QtWidgets.QWidget):
             self.worker = DownloadWorker()
             self.worker.signals.progress_update.connect(self.write_log)
             # self.worker.signals.download_error.connect()
-            # self.worker.signals.download_finished.connect()
+            self.worker.signals.download_finished.connect(self.finished_modal)
             download_dir = QtWidgets.QFileDialog.getExistingDirectory(self,("Open Directory"),
                                                                       options=QtWidgets.QFileDialog.Options(
                                                                         QtWidgets.QFileDialog.ShowDirsOnly  
@@ -86,6 +87,11 @@ class HomeWidget(QtWidgets.QWidget):
         else: 
             print("OPERATION TERMINATED")
    
+    def finished_modal(self,fileurl):
+        # QtWidgets.QMessageBox.information(self, "Download Finished", "Download Completed Successfully", QtWidgets.QMessageBox.Ok)
+        popup = FinishDialog(self,fileurl)
+        popup.exec()
+
     def write_log(self,text):
         self.log_viewer.appendPlainText(text)
     

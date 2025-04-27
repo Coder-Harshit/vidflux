@@ -114,10 +114,15 @@ class DownloadWorker:
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             try: 
-                print(ydl_opts)
+                # print(ydl_opts)
                 # self.signals.progress_update.emit()
+                info = ydl.extract_info(url, download=False)
+                print(ydl_opts)
+                # final_path = ydl.prepare_filename(info, ydl_opts['outtmpl'])
+                final_path = ydl.prepare_filename(info)
+                # print(final_path)
                 ydl.download(url)
-                self.signals.download_finished.emit()
+                self.signals.download_finished.emit(final_path)
             except Exception as ex:
                 print("ERROR Occured: ",ex)
                 self.signals.download_error.emit(str(ex))
