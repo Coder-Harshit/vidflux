@@ -1,4 +1,7 @@
+from email.mime import audio
+import select
 from PySide6 import QtWidgets
+from pandas import DataFrame
 from widgets.queue import DownloadQueue
 from utils import validateURL
 from utils.ytdlp import DownloadWorker
@@ -6,11 +9,13 @@ import sys
 import threading
 from signals import DownloadSignals
 from screens.download_finish import FinishDialog
+from screens.format_selection import FormatSelector
 
 class HomeWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
+        self.output_fmt = None
 
         self.signals = DownloadSignals()
 
@@ -67,12 +72,14 @@ class HomeWidget(QtWidgets.QWidget):
             self.worker.signals.progress_update.connect(self.write_log)
             # self.worker.signals.download_error.connect()
             self.worker.signals.download_finished.connect(self.finished_modal)
-            download_dir = QtWidgets.QFileDialog.getExistingDirectory(self,("Open Directory"),
+            self.worker.signals.formats_listed.connect(self.open_format_selector)
+            self.download_dir = QtWidgets.QFileDialog.getExistingDirectory(self,("Open Directory"),
                                                                       options=QtWidgets.QFileDialog.Options(
                                                                         QtWidgets.QFileDialog.ShowDirsOnly  
                                                                       )
             )
-            self.worker_thread = threading.Thread(target=self.worker.download, args=(url,download_dir))
+            # self.worker_thread = threading.Thread(target=self.worker.download, args=(url,download_dir,self.output_fmt))
+            self.worker_thread = threading.Thread(target=self.worker.formatSelection, args=(url,))
             self.worker_thread.start()
 
     def empty_logs(self):
@@ -87,6 +94,42 @@ class HomeWidget(QtWidgets.QWidget):
         else: 
             print("OPERATION TERMINATED")
    
+    def open_format_selector(self, formats: DataFrame):
+        popup = FormatSelector(self, formats)
+        popup.exec()
+
+        if popup.result() == QtWidgets.QDialog.Accepted:
+            selected_formats = popup.get_selected_formats()
+            print(selected_formats)
+            # if selected_formats:
+            #     self.output_fmt = selected_formats
+            #     print("Selected formats:", self.output_fmt)
+            audio_id = selected_formats.get('audio')
+            video_id = selected_formats.get('video')
+
+            if audio_id and video_id:
+                ydl_format_string = f"{audio_id}+{video_id}"
+            elif audio_id:
+                ydl_format_string = audio_id
+            elif video_id:
+                ydl_format_string = video_id
+            else:
+                print("No formats selected.")
+                return
+            print("YDL format string:", ydl_format_string)
+        if popup.result() == QtWidgets.QDialog.Rejected:
+            # TODO
+            # instead of exit clear the url
+            exit()
+
+        self.downloader_thread = threading.Thread(
+            target=self.worker.download,
+            args=(self.url_bar.text(), self.download_dir, ydl_format_string)
+        )
+        self.downloader_thread.start()
+        
+
+
     def finished_modal(self,fileurl):
         # QtWidgets.QMessageBox.information(self, "Download Finished", "Download Completed Successfully", QtWidgets.QMessageBox.Ok)
         popup = FinishDialog(self,fileurl)

@@ -14,7 +14,7 @@ class FinishDialog(QtWidgets.QDialog):
         self.filename_with_ext = file_path.split("/")[-1]
         self.filename = self.filename_with_ext.split(".")[0]
 
-        self.label = QtWidgets.QLabel(f"\"{self.filename}\" finished Downloading! :)", self)
+        self.label = QtWidgets.QLabel(f"\"{self.filename_with_ext}\" finished Downloading! :)", self)
         # self.label.setGeometry(50, 50, 200, 50)
 
         self.ok_button = QtWidgets.QPushButton("OK", self)
