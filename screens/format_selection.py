@@ -45,7 +45,7 @@ class FormatSelector(QtWidgets.QDialog):
             if row['language'] is None:
                 text_str = f"{row['ext']}"
             else:
-                text_str = f"{row['ext']}\t[{row['language']}]",
+                text_str = f"{row['ext']}\t[{row['language']}]"
             radio_btn = QtWidgets.QRadioButton(
                 # audio_options_layout,
                 text_str,
