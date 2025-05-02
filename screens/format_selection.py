@@ -24,13 +24,11 @@ class FormatSelector(QtWidgets.QDialog):
 
         audio_layout = QtWidgets.QVBoxLayout()
         audio_layout.setObjectName("audio_layout")
-        audio_enabled: bool = QtWidgets.QCheckBox("Enable Audio", self)
-        audio_enabled.setChecked(True)
-        
-        # TODO
-        # audio_enabled.stateChanged.connect(self.toggle_audio)
+        self.audio_enabled: bool = QtWidgets.QCheckBox("Enable Audio", self)
+        self.audio_enabled.setChecked(True)
+        self.audio_enabled.stateChanged.connect(self.toggle_audio)
 
-        audio_layout.addWidget(audio_enabled)
+        audio_layout.addWidget(self.audio_enabled)
 
         audio_options_layout = QtWidgets.QGridLayout(self)
         audio_options_layout.setObjectName("audio_options_layout")
@@ -78,13 +76,12 @@ class FormatSelector(QtWidgets.QDialog):
         # VIDEO!!!
         video_layout = QtWidgets.QVBoxLayout()
         video_layout.setObjectName("video_layout")
-        video_enabled: bool = QtWidgets.QCheckBox("Enable Video", self)
-        video_enabled.setChecked(True)
+        self.video_enabled: bool = QtWidgets.QCheckBox("Enable Video", self)
+        self.video_enabled.setChecked(True)
         
-        # TODO
-        # video_enabled.stateChanged.connect(self.toggle_video)
+        self.video_enabled.stateChanged.connect(self.toggle_video)
 
-        video_layout.addWidget(video_enabled)
+        video_layout.addWidget(self.video_enabled)
 
         video_options_layout = QtWidgets.QGridLayout(self)
         video_options_layout.setObjectName("video_options_layout")
@@ -122,6 +119,10 @@ class FormatSelector(QtWidgets.QDialog):
         audio_selected = False
         video_selected = False
 
+        if not self.audio_enabled.isChecked() and not self.video_enabled.isChecked():
+            QtWidgets.QMessageBox.warning(self, "Warning", "Please select at least one format.")
+            return
+
         for radio_btn in self.audio_radio_buttons:
             if radio_btn.isChecked():
                 self.selected_fmt_id['audio'] = radio_btn.format_id
@@ -142,3 +143,19 @@ class FormatSelector(QtWidgets.QDialog):
 
     def get_selected_formats(self):
         return self.selected_fmt_id
+    
+    def toggle_audio(self, state):
+        if state:
+            for radio_btn in self.audio_radio_buttons:
+                radio_btn.show()
+        else:
+            for radio_btn in self.audio_radio_buttons:
+                radio_btn.hide()
+
+    def toggle_video(self, state):
+        if state:
+            for radio_btn in self.video_radio_buttons:
+                radio_btn.show()
+        else:
+            for radio_btn in self.video_radio_buttons:
+                radio_btn.hide()

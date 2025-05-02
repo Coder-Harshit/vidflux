@@ -136,8 +136,9 @@ class DownloadWorker:
         # with yt_dlp.YoutubeDL({'listformats':True}) as ydl:
         #     ydl.download(url)
 
-        with yt_dlp.YoutubeDL() as ydl:
-            self.format_handler(url, ydl)
+        # with yt_dlp.YoutubeDL() as ydl:
+            # self.format_handler(url, ydl)
+        self.format_handler(url)
 
     # def download(self, url, download_dir="", preferred_ext=None):
     def download(self, url, download_dir="", fmt_string=None):
@@ -176,8 +177,9 @@ class DownloadWorker:
                 print("ERROR Occured: ", ex)
                 self.signals.download_error.emit(str(ex))
 
-    def format_handler(self, url, ydl: yt_dlp.YoutubeDL):
-        with ydl:  # Capture the available formats and store them in a dictionary
+    # def format_handler(self, url, ydl: yt_dlp.YoutubeDL):
+    def format_handler(self, url):
+        with yt_dlp.YoutubeDL() as ydl:  # Capture the available formats and store them in a dictionary
             info = ydl.extract_info(url, download=False)
 
             # DEBUG
