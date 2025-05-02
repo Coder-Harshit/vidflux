@@ -159,6 +159,8 @@ class DownloadWorker:
                     "%(title)s - %(section_number)03d %(section_title)s.%(ext)s",
                 ),
             },
+            "cookiesfrombrowser": ["chrome"],
+            # "cookiesfrombrowser": ["default","chrome","firefox"],
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -179,7 +181,11 @@ class DownloadWorker:
 
     # def format_handler(self, url, ydl: yt_dlp.YoutubeDL):
     def format_handler(self, url):
-        with yt_dlp.YoutubeDL() as ydl:  # Capture the available formats and store them in a dictionary
+        ytdl_opts = {
+            "cookiesfrombrowser": ["chrome"],
+            # "cookiesfrombrowser": ["default","chrome","firefox"],
+        }
+        with yt_dlp.YoutubeDL(ytdl_opts) as ydl:  # Capture the available formats and store them in a dictionary
             info = ydl.extract_info(url, download=False)
 
             # DEBUG

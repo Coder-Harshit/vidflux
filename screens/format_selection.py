@@ -1,6 +1,7 @@
 from email.mime import audio
 from PySide6 import QtWidgets
 from pandas import DataFrame
+from utils.const import AUDIO_CODECS, VIDEO_CODECS
 
 class FormatSelector(QtWidgets.QDialog):
     def __init__(self, parent, formats: DataFrame):
@@ -36,7 +37,7 @@ class FormatSelector(QtWidgets.QDialog):
         self.audio_radio_buttons = []
         audio_formats = self.formats[self.formats['vcodec'] == 'none']
         audio_formats = audio_formats[::-1]
-        audio_group_btns = QtWidgets.QButtonGroup(self)
+        self.audio_group_btns = QtWidgets.QButtonGroup(self)
 
         col_count = 3
         for indx, (id, row) in enumerate(audio_formats.iterrows()):
@@ -64,9 +65,9 @@ class FormatSelector(QtWidgets.QDialog):
                 button_id = int(parts[0])
             except (ValueError, AttributeError):
                 button_id = 10000 + id  # Use large offset to avoid conflicts
-                
-            audio_group_btns.addButton(radio_btn, button_id)
-            # radio_btn.toggled.connect(self.update_selected_format)
+            
+            self.audio_group_btns.addButton(radio_btn, button_id)
+            radio_btn.toggled.connect(self.update_video_format_options)
 
         base_layout.addLayout(audio_layout)
         base_layout.addLayout(audio_options_layout)
@@ -116,6 +117,7 @@ class FormatSelector(QtWidgets.QDialog):
 
 
     def confirm_selection(self):
+        print(self.audio_group_btns.checkedButton())
         audio_selected = False
         video_selected = False
 
@@ -159,3 +161,42 @@ class FormatSelector(QtWidgets.QDialog):
         else:
             for radio_btn in self.video_radio_buttons:
                 radio_btn.hide()
+    
+    def update_video_format_options(self, state):
+        if state:
+            checked_btn = self.audio_group_btns.checkedButton()
+            fmt_id = checked_btn.format_id
+            selected_audio_codec = self.formats.loc[fmt_id]['acodec']
+            allowed_video_codecs = AUDIO_CODECS[selected_audio_codec]
+            # Updating video format options based on selected audio codec
+            for radio_btn in self.video_radio_buttons:
+                btn_video_codec = self.formats.loc[radio_btn.format_id]['vcodec']
+                if btn_video_codec == 'vp09':
+                    btn_video_codec = 'vp9'
+                
+                if btn_video_codec in allowed_video_codecs:
+                    radio_btn.setEnabled(True)
+                else:
+                    radio_btn.setEnabled(False)
+
+
+    def update_audio_format_options(self, state):
+        if state:
+            checked_btn = self.video_group_btns.checkedButton()
+            fmt_id = checked_btn.format_id
+            
+            selected_video_codec = self.formats.loc[fmt_id]['vcodec']
+
+            if selected_video_codec=='vp09':
+                selected_video_codec = 'vp9'
+
+            allowed_audio_codecs = VIDEO_CODECS[selected_video_codec]
+            # Updating video format options based on selected audio codec
+            for radio_btn in self.audio_radio_buttons:
+                btn_audio_codec = self.formats.loc[radio_btn.format_id]['acodec']
+                if btn_audio_codec in allowed_audio_codecs:
+                    radio_btn.setEnabled(True)
+                else:
+                    radio_btn.setEnabled(False)
+
+
